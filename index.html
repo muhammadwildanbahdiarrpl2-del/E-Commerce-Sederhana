@@ -1,0 +1,199 @@
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TokoKu - E-Commerce Sederhana</title>
+
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<header>
+    <h1>🛍️ TokoKu</h1>
+    <button class="cart-button" onclick="scrollKeranjang()">
+        🛒 Keranjang (<span id="cartCount">0</span>)
+    </button>
+</header>
+
+<main class="container">
+
+    <section class="hero">
+        <div>
+            <h2>Temukan Produk Favoritmu</h2>
+            <p>Belanja mudah, harga bersahabat, dan pilihan makin lengkap.</p>
+        </div>
+        <div class="hero-badge">
+            <strong id="productTotal">50</strong>
+            Produk Pilihan
+        </div>
+    </section>
+
+    <h2 class="section-title">Katalog Produk</h2>
+
+    <div class="search-filter">
+        <div class="search-input-wrap">
+            <input type="search" id="search"
+                   placeholder="Cari produk..."
+                   aria-label="Cari produk"
+                   oninput="tampilkanProduk(true)">
+            <button type="button" id="searchClear" class="search-clear"
+                    onclick="resetFilterProduk()" aria-label="Hapus pencarian"
+                    title="Hapus pencarian" hidden>
+                &times;
+            </button>
+        </div>
+
+        <select id="category" onchange="tampilkanProduk(true)">
+            <option value="Semua">Semua Kategori</option>
+            <option value="Elektronik">Elektronik</option>
+            <option value="Fashion">Fashion</option>
+            <option value="Aksesoris">Aksesoris</option>
+            <option value="Rumah & Hobi">Rumah &amp; Hobi</option>
+            <option value="Kecantikan">Kecantikan</option>
+            <option value="Olahraga">Olahraga</option>
+        </select>
+
+        <select id="sort" onchange="tampilkanProduk(true)" aria-label="Urutkan produk">
+            <option value="default">Urutkan</option>
+            <option value="termurah">Harga Termurah</option>
+            <option value="termahal">Harga Termahal</option>
+            <option value="nama">Nama A-Z</option>
+        </select>
+    </div>
+
+    <p id="resultCount" class="result-count"></p>
+    <p class="catalog-notice">Rating dan jumlah terjual merupakan data demo.</p>
+    <div class="products" id="products"></div>
+    <button id="loadMoreButton" class="checkout-button load-more-button"
+            onclick="tampilkanLebihBanyak()">
+        Tampilkan produk lainnya
+    </button>
+
+    <section class="cart" id="keranjang">
+        <div class="cart-header">
+            <h2>Keranjang Belanja</h2>
+            <span id="cartSummary" class="cart-summary"></span>
+        </div>
+
+        <div class="cart-layout">
+            <div id="cartItems"></div>
+
+            <div class="cart-summary-panel" id="cartSummaryPanel">
+                <h3>Ringkasan belanja</h3>
+                <div class="voucher">
+                    <label class="sr-only" for="voucher">Kode voucher</label>
+                    <input type="text" id="voucher"
+                           placeholder="Kode voucher, contoh HEMAT10">
+                    <button class="voucher-button" type="button"
+                            onclick="gunakanVoucher()">Gunakan</button>
+                </div>
+                <p id="voucherMessage" class="voucher-message"
+                   aria-live="polite"></p>
+
+                <div class="total">
+                    <p>Subtotal <span id="subtotal">Rp0</span></p>
+                    <p>Diskon <span id="diskon">Rp0</span></p>
+                    <p class="total-final">
+                        <span>Total produk <small>(belum termasuk ongkir)</small></span>
+                        <strong id="total">Rp0</strong>
+                    </p>
+                </div>
+
+                <button class="checkout-button" id="checkoutButton"
+                        onclick="bukaCheckout()" disabled>
+                    Lanjut ke Checkout
+                </button>
+                <p class="cart-demo-note">Checkout simulasi • Ongkir belum dihitung</p>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<!-- POPUP DETAIL PRODUK -->
+<div class="modal" id="productDetailModal" aria-hidden="true">
+    <div class="modal-content product-detail-modal"
+         role="dialog" aria-modal="true" aria-labelledby="detailTitle">
+        <button class="detail-close" type="button"
+                onclick="tutupDetailProduk()" aria-label="Tutup detail produk">
+            &times;
+        </button>
+        <div id="productDetail"></div>
+    </div>
+</div>
+
+<!-- POPUP CHECKOUT -->
+<div class="modal" id="checkoutModal">
+    <div class="modal-content">
+        <h2>Checkout</h2>
+        <div class="checkout-summary" aria-live="polite">
+            <h3>Ringkasan pesanan</h3>
+            <p>Subtotal <strong id="checkoutSubtotal">Rp0</strong></p>
+            <p>Diskon <strong id="checkoutDiscount">Rp0</strong></p>
+            <p>Ongkir <strong>Belum dihitung</strong></p>
+            <p class="checkout-total">Total produk <strong id="checkoutTotal">Rp0</strong></p>
+        </div>
+        <p class="checkout-note">
+            Ini checkout simulasi. Pembayaran dan pengiriman belum terintegrasi;
+            total belum termasuk ongkir.
+        </p>
+
+        <form id="checkoutForm">
+            <label for="nama">Nama pembeli</label>
+            <input type="text" id="nama"
+                   placeholder="Contoh: Budi Santoso" autocomplete="name" required>
+
+            <label for="alamat">Alamat pengiriman</label>
+            <input type="text" id="alamat"
+                   placeholder="Jalan, kota, dan kode pos"
+                   autocomplete="street-address" required>
+
+            <label for="telepon">Nomor telepon</label>
+            <input type="tel" id="telepon"
+                   placeholder="Contoh: 08xxxxxxxxxx"
+                   autocomplete="tel" required>
+
+            <button class="checkout-button" type="submit">
+                Buat Pesanan
+            </button>
+
+            <button type="button" class="close-button"
+                    onclick="tutupCheckout()">
+                Kembali
+            </button>
+        </form>
+    </div>
+</div>
+
+<!-- POPUP INVOICE -->
+<div class="modal" id="invoiceModal">
+    <div class="modal-content">
+        <h2>Invoice Pesanan</h2>
+
+        <div class="invoice" id="invoice"></div>
+
+        <button class="checkout-button"
+                onclick="window.print()">
+            Cetak Invoice
+        </button>
+
+        <button class="close-button"
+                onclick="tutupInvoice()">
+            Tutup
+        </button>
+    </div>
+</div>
+
+<footer>
+    <p>© 2026 TokoKu - Demo toko online</p>
+</footer>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="script.js" defer></script>
+
+</body>
+</html>
